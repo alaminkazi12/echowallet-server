@@ -34,10 +34,21 @@ async function run() {
     // await client.connect();
 
     // database
+    const ecowalletDb = client.db("ecowallet");
+    const users = ecowalletDb.collection("users");
     // user related api
     app.post("/user", async (req, res) => {
       const user = req.body;
-      console.log(user);
+      const email = user.email;
+      const query = { email: email };
+      const IsMatch = await users.findOne(query);
+      if (!IsMatch) {
+        console.log(user);
+        const result = await users.insertOne(user);
+        res.send(result);
+      } else {
+        res.send({ message: "already registered with this mail" });
+      }
     });
 
     // jwt related api
@@ -56,9 +67,6 @@ async function run() {
         })
         .send({ success: true });
     });
-
-    const ecowalletDb = client.db("ecowallet");
-    const users = ecowalletDb.collection("users");
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
